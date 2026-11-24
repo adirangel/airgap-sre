@@ -96,8 +96,8 @@ func (rep Report) Write(dir string) error {
 // Table is the markdown results table (also pasted into the README).
 func (rep Report) Table() string {
 	var b strings.Builder
-	b.WriteString("| # | Scenario | Expected category | Agent's category | Resources named | Points | Result | Time | Tool calls |\n")
-	b.WriteString("| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n")
+	b.WriteString("| # | Scenario | Expected category | Agent's category | Resources named | In JSON block | Points | Result | Time | Tool calls |\n")
+	b.WriteString("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n")
 	for _, r := range rep.Results {
 		verdict := "FAIL"
 		switch {
@@ -106,9 +106,10 @@ func (rep Report) Table() string {
 		case r.Error != "":
 			verdict = "ERROR"
 		}
-		fmt.Fprintf(&b, "| %d | [`%s`](%s) | `%s` | %s | %d/%d | %.2f | %s | %.0fs | %d |\n",
+		fmt.Fprintf(&b, "| %d | [`%s`](%s) | `%s` | %s | %d/%d | %d/%d | %.2f | %s | %.0fs | %d |\n",
 			r.Order, r.ID, r.Transcript, r.Score.ExpectedCategory, codeOrDash(r.Score.GotCategory),
-			r.Score.NamedCount, len(r.Score.Names), r.Score.Points, verdict, r.Seconds, r.ToolCalls)
+			r.Score.NamedCount, len(r.Score.Names), r.Score.InBlockCount, len(r.Score.Names),
+			r.Score.Points, verdict, r.Seconds, r.ToolCalls)
 	}
 	fmt.Fprintf(&b, "\n**%d/%d passed**, %.2f/%d points.\n", rep.Passed, rep.Total, rep.Points, rep.Total)
 	return b.String()
@@ -131,7 +132,9 @@ func (rep Report) Markdown() string {
 	b.WriteString(rep.Table())
 	b.WriteString("\nScoring is deterministic (no LLM judge): the category is read from the JSON block that ends the\n" +
 		"agent's answer and must match exactly; each expected resource name must appear in the answer as a whole\n" +
-		"token. Points = 0.5 for the category + 0.5 × (resources named / expected). PASS needs both in full.\n")
+		"token. Points = 0.5 for the category + 0.5 × (resources named / expected). PASS needs both in full.\n" +
+		"\"In JSON block\" is stricter and informational only: how many of those names the agent also put inside\n" +
+		"its final JSON block. A PASS with a low number there leaned on a name mentioned only in passing.\n")
 
 	var misses []Result
 	for _, r := range rep.Results {
@@ -175,8 +178,11 @@ func transcriptMarkdown(meta Meta, r Result) string {
 	fmt.Fprintf(&b, "- Category: expected `%s`, agent said %s\n", r.Score.ExpectedCategory, codeOrDash(r.Score.GotCategory))
 	for _, n := range r.Score.Names {
 		mark := "missing"
-		if n.Named {
-			mark = "named"
+		switch {
+		case n.InBlock:
+			mark = "named, also in the JSON block"
+		case n.Named:
+			mark = "named in the text only (not in the JSON block)"
 		}
 		fmt.Fprintf(&b, "- Must name %s `%s`: %s\n", n.Kind, n.Name, mark)
 	}

@@ -36,9 +36,9 @@ after items are removed.
 
 | ID | Item | Location | Approx. size | Ownership | Removal (PowerShell) |
 | --- | --- | --- | --- | --- | --- |
-| `kind-cluster` | kind node container `airgap-sre-control-plane` and its anonymous volume (cluster state, images pulled by the cluster) | Docker container | 1–6 GB, grows with pulled images | project-owned | `go run ./backend/cmd/labctl cleanup` |
+| `kind-cluster` | kind node container `airgap-sre-control-plane` and its anonymous volume: cluster state, images pulled by the cluster, and everything installed in it (kagent, its PostgreSQL data, agent sessions, any API-key Secret) | Docker container | 1–6 GB, grows with pulled images | project-owned | `go run ./backend/cmd/labctl cleanup` |
 | `registry-container` | Lab registry container `airgap-sre-registry` (port `127.0.0.1:5001`, restarts with Docker Desktop until removed) | Docker container | < 1 MB | project-owned | `go run ./backend/cmd/labctl cleanup` |
-| `registry-volume` | Volume `airgap-sre-registry-data`: every mirrored image. Kept by `lab down`, removed by `cleanup` | Docker volume | 2 MB after M1, a few GB with kagent images | project-owned | `go run ./backend/cmd/labctl cleanup` |
+| `registry-volume` | Volume `airgap-sre-registry-data`: every mirrored image. Kept by `lab down`, removed by `cleanup` | Docker volume | 2 MB after M1, ~560 MB with the kagent images | project-owned | `go run ./backend/cmd/labctl cleanup` |
 | `kind-network` | Docker network `kind`. Removed only if no foreign container is attached | Docker network | n/a | project-owned | `go run ./backend/cmd/labctl cleanup` |
 | `docker-images` | Host images pulled for the lab: `kindest/node` (pinned) and `registry` (pinned), plus older pins recorded in `.lab/host-images.txt` | Docker image store | ~1.4 GB | project-owned | `go run ./backend/cmd/labctl cleanup` |
 
@@ -51,5 +51,7 @@ Docker image store.
 | --- | --- | --- | --- | --- | --- |
 | `go-mod-cache` | Go module cache (this project's dependencies, plus golangci-lint sources if you lint locally with `go run`) | `%USERPROFILE%\go\pkg\mod` | ~400 MB for this project | shared (optional — affects other projects) | `go clean -modcache` |
 | `go-build-cache` | Go build cache | `%LOCALAPPDATA%\go-build` | ~500 MB for this project | shared (optional — affects other projects) | `go clean -cache` |
+| `ollama-models` | Ollama model used by the M3 baseline (`qwen3.5:4b`, set in `agents/modelconfig.yaml`). It was already on this machine; `labctl` never pulls or removes models. Ollama itself (the Windows app that owns the GPU) is a prerequisite, not part of this project | `%USERPROFILE%\.ollama\models` | 3.4 GB | shared (optional — affects other projects) | `ollama rm qwen3.5:4b` |
 | `docker-vhdx` | Docker Desktop WSL2 disk does not shrink after cleanup. The command only shows usage; to reclaim the space use Docker Desktop > Troubleshoot > Clean / Purge data, which removes ALL Docker data | `%LOCALAPPDATA%\Docker\wsl\disk\docker_data.vhdx` | whatever the lab used | shared (optional — affects other projects) | `docker system df` |
+| `model-api-key-env` | Only if you switch `agents/modelconfig.yaml` to a cloud provider: the session variable `AIRGAP_SRE_MODEL_API_KEY`. It is never persisted (no `setx`); it disappears when the PowerShell window closes. The copy inside the cluster (a Secret) is removed with the cluster | PowerShell session | n/a | manual | `Remove-Item Env:AIRGAP_SRE_MODEL_API_KEY -ErrorAction SilentlyContinue` |
 | `github-repo` | Private GitHub repository `adirangel/airgap-sre` (code, Actions logs and artifacts) | github.com | n/a | manual | `gh repo delete adirangel/airgap-sre --yes` |

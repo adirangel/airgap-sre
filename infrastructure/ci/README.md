@@ -7,6 +7,6 @@ use symlinks, so the workflow file lives there:
 | Job | Runner | What it does |
 | --- | --- | --- |
 | `lint-test` | `ubuntu-latest` | `go vet ./...`, golangci-lint (pinned), `go test ./...` |
-| `lab-e2e` | `ubuntu-latest` | Builds `labctl`, brings the lab up with kind, mirrors the `base` image group, proves the air gap with `lab verify`, runs inject + verify + reset for every scenario (from M2), then `cleanup`. No LLM and no secrets are needed. |
+| `lab-e2e` | `ubuntu-latest` | Builds `labctl`, brings the lab up with kind, mirrors the `base` image group, proves the air gap with `lab verify`, runs inject + verify + reset for every scenario (from M2), then `cleanup`. No LLM and no secrets are needed. The agent eval (`labctl eval run`) is not run in CI: it needs a model. |
 
 Action and linter versions are recorded in [`../VERSIONS.md`](../VERSIONS.md).

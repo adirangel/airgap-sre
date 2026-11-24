@@ -51,3 +51,41 @@ cilium-manager-agent:
   enabled: false
 cilium-debug-agent:
   enabled: false
+
+# Extra read-only RBAC for the built-in tool server.
+#
+# The chart's read-only role (kagent-tools-read-role) covers namespaced
+# workloads but not nodes, EndpointSlices, quotas or storage objects. The
+# first eval run showed the cost: on the "Pending pod" scenario every
+# `get node` call failed with Forbidden, so the agent could not check node
+# labels. These rules are get/list/watch only, and Secrets stay unreadable.
+extraObjects:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: airgap-sre-tools-extra-read
+    rules:
+      - apiGroups: [""]
+        resources: [nodes, persistentvolumes, resourcequotas, limitranges]
+        verbs: [get, list, watch]
+      - apiGroups: [discovery.k8s.io]
+        resources: [endpointslices]
+        verbs: [get, list, watch]
+      - apiGroups: [storage.k8s.io]
+        resources: [storageclasses]
+        verbs: [get, list, watch]
+      - apiGroups: [policy]
+        resources: [poddisruptionbudgets]
+        verbs: [get, list, watch]
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: airgap-sre-tools-extra-read
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: airgap-sre-tools-extra-read
+    subjects:
+      - kind: ServiceAccount
+        name: kagent-tools
+        namespace: kagent

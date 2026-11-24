@@ -258,7 +258,7 @@ func TestReportWrite(t *testing.T) {
 		return string(data)
 	}
 	md := read("results.md")
-	for _, want := range []string{"**1/2 passed**", "`m:1` (Ollama)", "| 4 | [`pending-unschedulable`](transcripts/04-pending-unschedulable.md)", "PASS", "## Misses",
+	for _, want := range []string{"**1/2 passed**", "`m:1` (Ollama)", "| 4 | [`pending-unschedulable`](transcripts/04-pending-unschedulable.md)", "In JSON block", "PASS", "## Misses",
 		"category `node_failure`, expected `unschedulable`", "did not name NodeLabel `disktype`"} {
 		if !strings.Contains(md, want) {
 			t.Errorf("results.md missing %q:\n%s", want, md)

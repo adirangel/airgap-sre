@@ -28,9 +28,10 @@ type DiagnosedObject struct {
 
 // NameResult says whether one expected resource was named.
 type NameResult struct {
-	Kind  string `json:"kind"`
-	Name  string `json:"name"`
-	Named bool   `json:"named"`
+	Kind    string `json:"kind"`
+	Name    string `json:"name"`
+	Named   bool   `json:"named"`   // appears anywhere in the answer
+	InBlock bool   `json:"inBlock"` // also appears inside the final JSON diagnosis block
 }
 
 // Score is the result for one scenario.
@@ -41,9 +42,10 @@ type Score struct {
 	CategoryCorrect  bool         `json:"categoryCorrect"`
 	Names            []NameResult `json:"names"`
 	NamedCount       int          `json:"namedCount"`
-	Structured       bool         `json:"structured"` // the answer ended with a parseable diagnosis block
-	Points           float64      `json:"points"`     // 0..1: half for the category, half for the named resources
-	Pass             bool         `json:"pass"`       // category correct AND every resource named
+	InBlockCount     int          `json:"inBlockCount"` // stricter, informational: named inside the JSON block
+	Structured       bool         `json:"structured"`   // the answer ended with a parseable diagnosis block
+	Points           float64      `json:"points"`       // 0..1: half for the category, half for the named resources
+	Pass             bool         `json:"pass"`         // category correct AND every resource named
 }
 
 // ScoreAnswer scores one answer. The rules:
@@ -55,6 +57,9 @@ type Score struct {
 //     the answer as a whole token (case-insensitive). "shop" does not match
 //     inside "shop-frontend".
 //   - Points = 0.5*category + 0.5*(named/total). Pass needs both in full.
+//   - InBlock is a stricter, informational count: the name also appears
+//     inside the final JSON block. It does not change Points or Pass, but it
+//     shows when a pass leaned on a name that was only mentioned in passing.
 func ScoreAnswer(s scenario.Scenario, answer string) Score {
 	d := ExtractDiagnosis(answer)
 	sc := Score{
@@ -69,7 +74,11 @@ func ScoreAnswer(s scenario.Scenario, answer string) Score {
 		if named {
 			sc.NamedCount++
 		}
-		sc.Names = append(sc.Names, NameResult{Kind: r.Kind, Name: r.Name, Named: named})
+		inBlock := named && MentionsName(d.Raw, r.Name)
+		if inBlock {
+			sc.InBlockCount++
+		}
+		sc.Names = append(sc.Names, NameResult{Kind: r.Kind, Name: r.Name, Named: named, InBlock: inBlock})
 	}
 	if sc.CategoryCorrect {
 		sc.Points += 0.5

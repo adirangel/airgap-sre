@@ -11,16 +11,16 @@ if any, we build next.
 | --- | --- | --- | --- |
 | kind (Kubernetes in Docker) | Lab cluster | kagent built-in Kubernetes tools | M1 |
 | `registry` (CNCF Distribution) | Lab image registry; the only place the cluster may pull from | none yet (candidate gap) | M1 |
-| kagent | Agent runtime (controller, tool server, agent pods) | — | M3 |
-| Cloud LLM API | Model for the M3 baseline (egress stays open for this) | — | M3 |
+| kagent 0.10.7 | Agent runtime (controller, tool server, UI, PostgreSQL, one pod per agent) | — | M3 |
+| Ollama on the Windows host | Model for the M3 baseline (`qwen3.5:4b`). Pods reach it at `host.docker.internal:11434`. No cloud API is called | — | M3 |
 
 ## Target environment (after M3)
 
 | Component | Role | Tooling for the agent | Status |
 | --- | --- | --- | --- |
 | RKE2 | Production-like Kubernetes | kagent built-in Kubernetes tools | later |
-| Harbor | Internal registry | Reuse [`oreondev/harbor-mcp`](https://github.com/oreondev/harbor-mcp) — do not build | later |
-| Jenkins | CI/CD | Reuse the Jenkins [`mcp-server` plugin](https://plugins.jenkins.io/mcp-server/) — do not build | later |
-| Ollama (Windows host, owns the GPU) | Local LLM; pods reach it at `host.docker.internal:11434` | — | later |
+| Harbor | Internal registry | Reuse [`oreondev/harbor-mcp`](https://github.com/oreondev/harbor-mcp) — do not build. Read-only MCP server (projects, artifacts, vulnerabilities, robots, replication); image `ghcr.io/oreondev/harbor-mcp`; stdio or streamable HTTP. Checked 2026-11-24: v0.2.0, a very new project, so review it before giving it registry credentials | later |
+| Jenkins | CI/CD | Reuse the Jenkins [`mcp-server` plugin](https://plugins.jenkins.io/mcp-server/) ([source](https://github.com/jenkinsci/mcp-server-plugin)) — do not build. Jenkins itself becomes the MCP server (`/mcp-server/mcp`); auth is a Jenkins user + API token | later |
+| Ollama (Windows host, owns the GPU) | Local LLM; pods reach it at `host.docker.internal:11434` | — | already used in M3 |
 
 No GPU passthrough into kind is attempted.

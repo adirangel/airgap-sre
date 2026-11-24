@@ -55,5 +55,59 @@ and containerd's [`hosts.md`](https://github.com/containerd/containerd/blob/main
   `public.ecr.aws/docker/library/hello-world` (catch-all) cannot be pulled.
 
 Limits of this scope (by design for M0–M3): network egress from pods is still
-open, because M3 calls a cloud model API. Only image pulls are air-gapped.
+open. The plan allowed for a cloud model API in M3; the baseline ended up on
+a local Ollama, which pods reach on the host. Only image pulls are air-gapped.
 The node image itself is pulled by the host Docker, not by the cluster.
+
+## Agent baseline (M3)
+
+Checked on **2026-11-24/25**. Sources: the kagent docs
+(<https://kagent.dev/docs>, versioned under `/docs/kagent/0.x/` and
+`/docs/kagent/latest/`), the `kagent-dev/kagent` GitHub releases, the chart's
+own `values.yaml` (`helm show values`), and the CRDs installed in the lab.
+
+| Thing | Version | Source checked | Why |
+| --- | --- | --- | --- |
+| kagent charts (`kagent-crds`, `kagent`) | 0.10.7 | GitHub releases (published 2026-11-23); `helm show chart oci://ghcr.io/kagent-dev/kagent/helm/kagent --version 0.10.7` (digest `sha256:b3c52625…`) | See "Why 0.10.x and not 1.0.x" below |
+| kagent images | controller, ui, golang-adk `0.10.7`; tools `0.3.2`; postgres `18.6-alpine3.23` | `helm template` with our values, plus the controller ConfigMap (`GO_IMAGE_*`) for the per-agent runtime image | Exactly what the minimal install runs. Pinned by digest in `images.yaml` |
+| API version | `kagent.dev/v1alpha2` | CRDs in the cluster | Storage version in 0.10.x |
+| Model | `qwen3.5:4b` on Ollama 0.17.5 (host) | `ollama list`, `ollama show` (capabilities: tools) | The owner chose Ollama for the baseline; this was the only model already on the machine, so nothing was downloaded |
+
+### Why 0.10.x and not 1.0.x
+
+kagent has two incompatible release lines. GitHub marks v1.0.1 (2026-11-12)
+as "latest"; v0.10.7 (2026-11-23) is the maintained legacy line.
+
+| | 0.10.x (chosen) | 1.0.x |
+| --- | --- | --- |
+| API | `kagent.dev/v1alpha2` | `api.kagent.dev/v1alpha3` |
+| An agent runs as | a Deployment + Service | an actor on Agent Substrate (gVisor worker pool) |
+| Extra requirements | none (PostgreSQL is bundled) | Kubernetes ≥ 1.37, Agent Substrate, your own PostgreSQL, PodCertificate controller |
+| A2A endpoint | `/api/a2a/{namespace}/{agent}/` | `/agents/{namespace}/{name}` |
+
+0.10.7 needs five images and runs in kind as-is. 1.0.x needs gVisor inside
+kind on Docker Desktop, which is a risk of its own, and many more images to
+mirror. There is no in-place upgrade between the lines, so moving to 1.x is a
+deliberate later step (a good moment is the move to RKE2).
+
+### Facts that differ from the docs
+
+- The docs' "private registry" section says to set `image.registry`. The
+  0.10.7 chart has no such key (it is top-level `registry`, plus separate keys
+  for the tool server, kmcp and PostgreSQL). We do not need any of them: pod
+  specs keep the upstream names and containerd redirects the pulls.
+- The docs show the agent card at `.well-known/agent.json`. On 0.10.7 the
+  working path is `.well-known/agent-card.json` (tested in the lab).
+- `providers: null` in the chart values stops the chart from creating a
+  default ModelConfig, so `agents/modelconfig.yaml` is the only one.
+- The chart's Ollama default is `num_ctx: 64000`. We set `32768` for a 4.7B
+  model on a 16 GB GPU.
+- The controller restarts a few times on first install while PostgreSQL
+  starts. `helm --wait` covers it.
+
+### Helm charts and the air gap
+
+The two kagent charts are pulled by `helm` on the host from `ghcr.io`, not by
+the cluster, so the image-level air gap still holds. For the full air-gap
+bundle the charts will have to be vendored or pushed to the internal registry
+as OCI artifacts.

@@ -29,8 +29,22 @@ const perfect = "The Service `storefront` selects `app=shop-front`, but the pods
 
 func TestScorePerfectAnswer(t *testing.T) {
 	sc := ScoreAnswer(demo(), perfect)
-	if !sc.Pass || sc.Points != 1 || !sc.CategoryCorrect || sc.NamedCount != 2 || !sc.Structured {
+	if !sc.Pass || sc.Points != 1 || !sc.CategoryCorrect || sc.NamedCount != 2 || sc.InBlockCount != 2 || !sc.Structured {
 		t.Fatalf("perfect answer scored %+v", sc)
+	}
+}
+
+// A name that is only mentioned in the prose still passes, but the stricter
+// in-block count shows it.
+func TestScoreInBlockIsStricter(t *testing.T) {
+	answer := "The storefront Service selects app=shop-front but the pods carry app=shop-frontend.\n" +
+		"```json\n{\"root_cause_category\": \"service_selector_mismatch\", \"resources\": [{\"kind\": \"Service\", \"name\": \"storefront\"}, {\"kind\": \"Pod\", \"name\": \"shop-frontend-69df64b78f-qpjpf\"}]}\n```"
+	sc := ScoreAnswer(demo(), answer)
+	if !sc.Pass || sc.NamedCount != 2 || sc.InBlockCount != 1 {
+		t.Fatalf("got %+v", sc)
+	}
+	if !sc.Names[0].InBlock || sc.Names[1].InBlock {
+		t.Fatalf("names = %+v", sc.Names)
 	}
 }
 
