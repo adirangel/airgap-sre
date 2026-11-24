@@ -1,0 +1,32 @@
+# The ONE place where the agent's model is configured. Swap the model or the
+# provider here, then run:
+#
+#   go run ./backend/cmd/labctl agent install
+#
+# Current choice: a local model served by Ollama on the host. Pods reach the
+# host at host.docker.internal:11434 (Docker Desktop). No API key is needed.
+#
+# To use a cloud provider instead, replace spec with e.g.
+#
+#   provider: Anthropic
+#   model: <model id>
+#   apiKeySecret: sre-model-api-key     # created by `labctl agent install`
+#   apiKeySecretKey: API_KEY            # from the env var AIRGAP_SRE_MODEL_API_KEY
+#
+# The key itself never goes into this repository.
+apiVersion: kagent.dev/v1alpha2
+kind: ModelConfig
+metadata:
+  name: sre-model
+  namespace: kagent
+spec:
+  provider: Ollama
+  model: qwen3.5:4b
+  ollama:
+    host: http://host.docker.internal:11434
+    options:
+      # Context window. Tool results (describe output, logs, events) add up.
+      num_ctx: "32768"
+      # As repeatable as a sampled model can be.
+      temperature: "0"
+      seed: "42"

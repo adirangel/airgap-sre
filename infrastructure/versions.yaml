@@ -58,3 +58,15 @@ lab:
   unmirroredImages:
     - "docker.io/library/hello-world:latest"
     - "public.ecr.aws/docker/library/hello-world:latest"
+
+# kagent (M3). Charts are pulled by helm on the host; the images they run are
+# listed in images.yaml (group "kagent") and come from the lab registry.
+kagent:
+  version: 0.10.7
+  namespace: kagent
+  crdsChart: "oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds"
+  chart: "oci://ghcr.io/kagent-dev/kagent/helm/kagent"
+  values: helm/kagent-values.yaml
+  # Service and port of the controller's A2A endpoint.
+  controllerService: kagent-controller
+  controllerPort: 8083

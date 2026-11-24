@@ -13,8 +13,20 @@ import (
 
 // Versions is infrastructure/versions.yaml.
 type Versions struct {
-	Tools []Tool `json:"tools"`
-	Lab   Lab    `json:"lab"`
+	Tools  []Tool `json:"tools"`
+	Lab    Lab    `json:"lab"`
+	Kagent Kagent `json:"kagent"`
+}
+
+// Kagent pins the kagent install.
+type Kagent struct {
+	Version           string `json:"version"`
+	Namespace         string `json:"namespace"`
+	CRDsChart         string `json:"crdsChart"`
+	Chart             string `json:"chart"`
+	Values            string `json:"values"`
+	ControllerService string `json:"controllerService"`
+	ControllerPort    int    `json:"controllerPort"`
 }
 
 // Tool is one pinned binary.
@@ -87,6 +99,10 @@ func LoadVersions(path string) (*Versions, error) {
 	if l.ClusterName == "" || l.NodeImage == "" || l.KindConfig == "" || len(l.UnmirroredImages) == 0 ||
 		l.Registry.Image == "" || l.Registry.ContainerName == "" || l.Registry.VolumeName == "" || l.Registry.HostPort == 0 {
 		return nil, fmt.Errorf("%s: lab section is incomplete", path)
+	}
+	k := v.Kagent
+	if k.Version == "" || k.Namespace == "" || k.CRDsChart == "" || k.Chart == "" || k.Values == "" || k.ControllerService == "" || k.ControllerPort == 0 {
+		return nil, fmt.Errorf("%s: kagent section is incomplete", path)
 	}
 	return &v, nil
 }

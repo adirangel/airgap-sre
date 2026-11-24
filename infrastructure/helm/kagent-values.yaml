@@ -1,0 +1,53 @@
+# Helm values for the kagent chart (version pinned in ../versions.yaml).
+# Minimal install for the M3 baseline: controller, UI, built-in tool server
+# and the bundled PostgreSQL. No bundled agents, no kmcp, no Grafana MCP.
+#
+# Image registries are NOT overridden here on purpose. Pod specs keep their
+# upstream names (ghcr.io/..., docker.io/...) and containerd on the node
+# redirects every pull to the lab registry. Every image this chart runs must
+# be listed in ../images.yaml (group "kagent"); `labctl agent install` refuses
+# to start while one of them is missing from the lab registry.
+
+# The model is configured in exactly one place: agents/modelconfig.yaml.
+# Setting providers to null stops the chart from creating its own default
+# ModelConfig and API-key Secret.
+providers: null
+
+# Built-in tool server: Kubernetes tools only, and read-only RBAC
+# (get/list/watch) instead of cluster-admin. Secrets stay unreadable.
+kagent-tools:
+  enabled: true
+  rbac:
+    readOnly: true
+    allowSecrets: false
+  tools:
+    enabledTools:
+      - k8s
+
+# Sub-charts we do not use.
+kmcp:
+  enabled: false
+grafana-mcp:
+  enabled: false
+
+# Bundled agents: all off. Our one agent lives in agents/.
+k8s-agent:
+  enabled: false
+kgateway-agent:
+  enabled: false
+istio-agent:
+  enabled: false
+promql-agent:
+  enabled: false
+observability-agent:
+  enabled: false
+argo-rollouts-agent:
+  enabled: false
+helm-agent:
+  enabled: false
+cilium-policy-agent:
+  enabled: false
+cilium-manager-agent:
+  enabled: false
+cilium-debug-agent:
+  enabled: false
