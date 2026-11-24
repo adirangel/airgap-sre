@@ -10,7 +10,7 @@ This repository currently covers the first four milestones:
 | M0 Bootstrap | Layout, rules, CI, footprint tracking | done |
 | M1 Lab | kind cluster + local registry; the cluster can pull **only** from that registry | done |
 | M2 Scenarios | Five reproducible failures with inject / verify / reset | done |
-| M3 Agent baseline | A [kagent](https://kagent.dev) agent scored against the scenarios | planned |
+| M3 Agent baseline | A [kagent](https://kagent.dev) agent scored against the scenarios | done |
 
 Local models and the full air-gap bundle come after M3.
 
@@ -21,6 +21,11 @@ Only these, on a clean Windows 11 machine:
 - Docker Desktop (WSL2 backend), running
 - Go
 - git
+
+For the agent eval (step 5 below) you also need a model. The default is a
+local one: [Ollama](https://ollama.com) running on the host with the model
+named in [agents/modelconfig.yaml](agents/modelconfig.yaml) already pulled.
+A cloud provider works too; see [agents/README.md](agents/README.md).
 
 Everything else (`kind`, `kubectl`, `helm`) is downloaded by `labctl` into
 `.tools/` inside the repo, pinned and checksum-verified. Nothing is installed
@@ -43,9 +48,21 @@ go run ./backend/cmd/labctl lab mirror --group base
 # 3. Prove the air gap: a mirrored image runs, un-mirrored public images cannot be pulled.
 go run ./backend/cmd/labctl lab verify
 
+# 4. Five failure scenarios: inject them, prove each failure is present, clean up.
+go run ./backend/cmd/labctl scenario inject --all
+go run ./backend/cmd/labctl scenario verify --all
+go run ./backend/cmd/labctl scenario reset --all
+
+# 5. The agent: mirror kagent's images, install it from the lab registry, run the eval.
+go run ./backend/cmd/labctl lab mirror --group kagent
+go run ./backend/cmd/labctl agent install
+go run ./backend/cmd/labctl eval run      # results + transcripts in docs/results/<date>/
+
 go run ./backend/cmd/labctl lab status
 go run ./backend/cmd/labctl lab down      # delete cluster + registry container (mirrored images are kept)
 ```
+
+Steps 1–4 need no model and no secrets; CI runs exactly those on every push.
 
 The lab kubeconfig is `.lab/kubeconfig`; `~/.kube/config` is never touched.
 To use kubectl yourself:
@@ -76,13 +93,56 @@ go run ./backend/cmd/labctl scenario reset oomkilled      # deletes the scenario
 | 4 | `pending-unschedulable` — nodeSelector no node satisfies | `unschedulable` |
 | 5 | `service-selector-mismatch` — Service selector matches no pods | `service_selector_mismatch` |
 
+### Agent baseline and eval
+
+`labctl agent install` installs kagent (pinned in
+[infrastructure/versions.yaml](infrastructure/versions.yaml)) entirely from
+the lab registry and applies the agent defined in [agents/](agents/): one
+read-only agent with kagent's built-in Kubernetes tools, and one swappable
+`ModelConfig` file.
+
+`labctl eval run` does this for each scenario: reset, inject, wait until the
+failure is present, send the agent **only the symptom** a user would report,
+score the answer against `expected.yaml`, reset. Scoring is deterministic —
+no LLM judge:
+
+- the root-cause category is read from the JSON block that ends the agent's
+  answer and must match exactly;
+- every resource in `expected.yaml` must be named in the answer;
+- PASS needs both. Points = 0.5 for the category + 0.5 × the share of
+  resources named.
+
+Full transcripts (every tool call and tool result) are kept next to the
+results so the misses can be reviewed by hand.
+
+### Results
+
+Baseline run of 2026-11-25: agent `sre-agent` on kagent 0.10.7, model
+`qwen3.5:4b` (Ollama, local, 4.7B parameters), six read-only Kubernetes tools.
+
+| # | Scenario | Expected category | Agent's category | Resources named | Result | Agent time | Tool calls |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | [`crashloop-bad-config`](docs/results/2026-11-25-2/transcripts/01-crashloop-bad-config.md) | `bad_config` | `bad_config` | 3/3 | PASS | 14s | 5 |
+| 2 | [`oomkilled`](docs/results/2026-11-25-2/transcripts/02-oomkilled.md) | `oom_killed` | `oom_killed` | 1/1 | PASS | 20s | 8 |
+| 3 | [`imagepull-not-mirrored`](docs/results/2026-11-25-2/transcripts/03-imagepull-not-mirrored.md) | `image_pull_failure` | `image_pull_failure` | 2/2 | PASS | 16s | 5 |
+| 4 | [`pending-unschedulable`](docs/results/2026-11-25-2/transcripts/04-pending-unschedulable.md) | `unschedulable` | `unschedulable` | 2/2 | PASS | 14s | 5 |
+| 5 | [`service-selector-mismatch`](docs/results/2026-11-25-2/transcripts/05-service-selector-mismatch.md) | `service_selector_mismatch` | `service_selector_mismatch` | 2/2 | PASS | 11s | 4 |
+
+**5/5 passed.** Full report: [docs/results/2026-11-25-2/results.md](docs/results/2026-11-25-2/results.md).
+An earlier run the same day ([docs/results/2026-11-25](docs/results/2026-11-25/results.md)) also scored
+5/5, but exposed a permissions gap that was then fixed.
+
+A perfect score here mostly shows that these five scenarios are too easy to
+separate good agents from weak ones. What the transcripts really show, and
+what to build next, is in [docs/gaps.md](docs/gaps.md).
+
 ### How the air gap works
 
 Image-level only (for now): containerd on the node is configured so that
 every registry — docker.io, ghcr.io, and a catch-all for everything else —
 resolves **only** to the lab registry. Pod specs keep their original image
 names. An image that was not mirrored fails with `ImagePullBackOff`.
-Network egress stays open until local models arrive. Details:
+Network egress from pods is still open (full network isolation is a later step). Details:
 [infrastructure/VERSIONS.md](infrastructure/VERSIONS.md).
 
 ## Removing everything
@@ -102,7 +162,7 @@ remove them yourself.
 | `backend/` | The Go CLI `labctl` |
 | `agents/` | kagent Agent / ModelConfig manifests and system prompts |
 | `infrastructure/` | kind config, Helm values, pinned versions, image list, scenarios, application stack inventory |
-| `docs/` | Footprint, gaps, eval results |
+| `docs/` | [Footprint](docs/FOOTPRINT.md), [gaps](docs/gaps.md), [eval results](docs/results/) |
 
 ## License
 

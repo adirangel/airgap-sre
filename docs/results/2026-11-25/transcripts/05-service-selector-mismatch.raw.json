@@ -1,0 +1,635 @@
+{
+  "jsonrpc": "2.0",
+  "id": "69cb78caec74c18b53c1cc8d20e5b4a3",
+  "result": {
+    "kind": "task",
+    "id": "01a20fa5-666d-7651-b52f-f5361b31c116",
+    "artifacts": [
+      {
+        "artifactId": "01a20fa5-b3a4-7bde-b3f8-8af78e48e380",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "## Root Cause Analysis\n\n**What's broken:** The Service `storefront` cannot route traffic to the application pods because there are no endpoints configured for it.\n\n**Evidence:**\n- The Service `storefront` has selector `app=shop-front` (note: \"shop-front\")\n- The actual pods have label `app=shop-frontend` (note: \"shop-frontend\")\n- These labels do not match, so the Service has no endpoints\n\n**Root cause category:** `service_selector_mismatch`\n\n```json\n{\n  \"root_cause_category\": \"service_selector_mismatch\",\n  \"resources\": [\n    {\"kind\": \"Service\", \"name\": \"storefront\"},\n    {\"kind\": \"Pod\", \"name\": \"shop-frontend-69df64b78f-qpjpf\"},\n    {\"kind\": \"Label\", \"value\": \"app=shop-front\"}\n  ],\n  \"summary\": \"The Service storefront selector app=shop-front does not match the pod labels app=shop-frontend, resulting in no endpoints.\"\n}\n```"
+          }
+        ]
+      }
+    ],
+    "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+    "history": [
+      {
+        "kind": "message",
+        "messageId": "c8be8284d8893ec249c3ac2f4cc12f18",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "Requests to storefront in namespace scn-shop fail with connection refused, although the application pods look healthy. Find the root cause.",
+            "metadata": {
+              "adk_type": ""
+            }
+          }
+        ],
+        "role": "user"
+      },
+      {
+        "kind": "message",
+        "messageId": "c8be8284d8893ec249c3ac2f4cc12f18",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "Requests to storefront in namespace scn-shop fail with connection refused, although the application pods look healthy. Find the root cause.",
+            "metadata": {
+              "adk_type": ""
+            }
+          }
+        ],
+        "role": "user"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-6eb5-7322-bbfd-272c0e942c8f",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 159,
+            "promptTokenCount": 1848,
+            "totalTokenCount": 2007
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "args": {
+                "namespace": "scn-shop",
+                "output": "wide"
+              },
+              "id": "b22242f6-36f7-43ea-b3ff-8f3d6394f3cc",
+              "name": "k8s_get_resources"
+            },
+            "metadata": {
+              "adk_is_long_running": false,
+              "adk_type": "function_call"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-6eba-7591-a980-f39db8496651",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "id": "b22242f6-36f7-43ea-b3ff-8f3d6394f3cc",
+              "name": "k8s_get_resources",
+              "response": {
+                "error": "Tool execution failed. Details: resource_type parameter is required"
+              }
+            },
+            "metadata": {
+              "adk_type": "function_response"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-735d-743d-8245-3313963c03c6",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 86,
+            "promptTokenCount": 1906,
+            "totalTokenCount": 1992
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "args": {
+                "namespace": "scn-shop",
+                "output": "wide",
+                "resource_type": "pod"
+              },
+              "id": "2083ea26-274b-4305-8478-55bf69306321",
+              "name": "k8s_get_resources"
+            },
+            "metadata": {
+              "adk_is_long_running": false,
+              "adk_type": "function_call"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-737e-71ac-90b9-748307bf6239",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "id": "2083ea26-274b-4305-8478-55bf69306321",
+              "name": "k8s_get_resources",
+              "response": {
+                "output": {
+                  "output": "NAME                             READY   STATUS    RESTARTS   AGE   IP            NODE                       NOMINATED NODE   READINESS GATES\nshop-frontend-69df64b78f-qpjpf   1/1     Running   0          5s    10.244.0.30   airgap-sre-control-plane   \u003cnone\u003e           \u003cnone\u003e\nshop-frontend-69df64b78f-xbczt   1/1     Running   0          5s    10.244.0.29   airgap-sre-control-plane   \u003cnone\u003e           \u003cnone\u003e\n"
+                }
+              }
+            },
+            "metadata": {
+              "adk_type": "function_response"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-7811-7cdc-971b-af9c575336ca",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 72,
+            "promptTokenCount": 2146,
+            "totalTokenCount": 2218
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "args": {
+                "namespace": "scn-shop",
+                "output": "wide",
+                "resource_type": "service"
+              },
+              "id": "422b187c-2b22-46bb-8d1a-fcaf646bac9b",
+              "name": "k8s_get_resources"
+            },
+            "metadata": {
+              "adk_is_long_running": false,
+              "adk_type": "function_call"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-7830-7ea7-9c02-38b12cb98c17",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "id": "422b187c-2b22-46bb-8d1a-fcaf646bac9b",
+              "name": "k8s_get_resources",
+              "response": {
+                "output": {
+                  "output": "NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE   SELECTOR\nstorefront   ClusterIP   10.96.169.146   \u003cnone\u003e        80/TCP    7s    app=shop-front\n"
+                }
+              }
+            },
+            "metadata": {
+              "adk_type": "function_response"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-7d74-7e89-9e60-c311551f54ce",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 91,
+            "promptTokenCount": 2276,
+            "totalTokenCount": 2367
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "args": {
+                "namespace": "scn-shop",
+                "resource_name": "storefront",
+                "resource_type": "service"
+              },
+              "id": "225e1e99-90a4-41a2-b8be-ba28af559b38",
+              "name": "k8s_describe_resource"
+            },
+            "metadata": {
+              "adk_is_long_running": false,
+              "adk_type": "function_call"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-7d95-7e82-9dfb-3cc661626d74",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "id": "225e1e99-90a4-41a2-b8be-ba28af559b38",
+              "name": "k8s_describe_resource",
+              "response": {
+                "output": {
+                  "output": "Name:                     storefront\nNamespace:                scn-shop\nLabels:                   \u003cnone\u003e\nAnnotations:              \u003cnone\u003e\nSelector:                 app=shop-front\nType:                     ClusterIP\nIP Family Policy:         SingleStack\nIP Families:              IPv4\nIP:                       10.96.169.146\nIPs:                      10.96.169.146\nPort:                     \u003cunset\u003e  80/TCP\nTargetPort:               8080/TCP\nEndpoints:                \u003cnone\u003e\nSession Affinity:         None\nInternal Traffic Policy:  Cluster\nEvents:                   \u003cnone\u003e\n"
+                }
+              }
+            },
+            "metadata": {
+              "adk_type": "function_response"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-8324-7ea2-b764-0603f3139ef4",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 93,
+            "promptTokenCount": 2525,
+            "totalTokenCount": 2618
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "args": {
+                "namespace": "scn-shop",
+                "resource_name": "shop-frontend-69df64b78f-qpjpf",
+                "resource_type": "pod"
+              },
+              "id": "275b4055-e467-4ae8-8f80-54672db064ce",
+              "name": "k8s_describe_resource"
+            },
+            "metadata": {
+              "adk_is_long_running": false,
+              "adk_type": "function_call"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-8347-7ce5-84ab-7c4042307f52",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "id": "275b4055-e467-4ae8-8f80-54672db064ce",
+              "name": "k8s_describe_resource",
+              "response": {
+                "output": {
+                  "output": "Name:             shop-frontend-69df64b78f-qpjpf\nNamespace:        scn-shop\nPriority:         0\nService Account:  default\nNode:             airgap-sre-control-plane/172.18.0.2\nStart Time:       Tue, 24 Nov 2026 22:20:25 +0000\nLabels:           app=shop-frontend\n                  pod-template-hash=69df64b78f\nAnnotations:      \u003cnone\u003e\nStatus:           Running\nIP:               10.244.0.30\nIPs:\n  IP:           10.244.0.30\nControlled By:  ReplicaSet/shop-frontend-69df64b78f\nContainers:\n  web:\n    Container ID:  containerd://aa76fc81314cefb4d6c8384990b509a4f2c565bee64673e1e18f15eebb6bff17\n    Image:         docker.io/library/busybox:1.37.0\n    Image ID:      docker.io/library/busybox@sha256:66a6306db78bf2dbf3487f293aa8d6990d8e506fdffab9cc43fe422becf886e4\n    Port:          8080/TCP\n    Host Port:     0/TCP\n    Command:\n      sh\n      -c\n      mkdir -p /www \u0026\u0026 echo \"storefront ok\" \u003e /www/index.html\n      exec httpd -f -p 8080 -h /www\n      \n    State:          Running\n      Started:      Tue, 24 Nov 2026 22:20:25 +0000\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      memory:  32Mi\n    Requests:\n      cpu:        10m\n      memory:     16Mi\n    Readiness:    http-get http://:8080/ delay=0s timeout=1s period=2s successThreshold=1 failureThreshold=3\n    Environment:  \u003cnone\u003e\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-cx85t (ro)\nConditions:\n  Type                        Status\n  PodReadyToStartContainers   True \n  Initialized                 True \n  Ready                       True \n  ContainersReady             True \n  PodScheduled                True \nVolumes:\n  kube-api-access-cx85t:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    Optional:                false\n    DownwardAPI:             true\nQoS Class:                   Burstable\nNode-Selectors:              \u003cnone\u003e\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type    Reason     Age   From               Message\n  ----    ------     ----  ----               -------\n  Normal  Scheduled  10s   default-scheduler  Successfully assigned scn-shop/shop-frontend-69df64b78f-qpjpf to airgap-sre-control-plane\n  Normal  Pulled     10s   kubelet            spec.containers{web}: Container image \"docker.io/library/busybox:1.37.0\" already present on machine and can be accessed by the pod\n  Normal  Created    10s   kubelet            spec.containers{web}: Container created\n  Normal  Started    10s   kubelet            spec.containers{web}: Container started\n"
+                }
+              }
+            },
+            "metadata": {
+              "adk_type": "function_response"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-8bd3-78a5-9875-9c0eee4a1246",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 156,
+            "promptTokenCount": 3552,
+            "totalTokenCount": 3708
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "args": {
+                "namespace": "scn-shop",
+                "resource_name": "storefront",
+                "resource_type": "service"
+              },
+              "id": "7727ffd0-1c54-4140-9248-9237f02bd42c",
+              "name": "k8s_get_resource_yaml"
+            },
+            "metadata": {
+              "adk_is_long_running": false,
+              "adk_type": "function_call"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-8bf9-712c-aa5d-cd705552b7ce",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "id": "7727ffd0-1c54-4140-9248-9237f02bd42c",
+              "name": "k8s_get_resource_yaml",
+              "response": {
+                "output": {
+                  "output": "apiVersion: v1\nkind: Service\nmetadata:\n  annotations:\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"storefront\",\"namespace\":\"scn-shop\"},\"spec\":{\"ports\":[{\"port\":80,\"targetPort\":8080}],\"selector\":{\"app\":\"shop-front\"}}}\n  creationTimestamp: \"2026-11-24T22:20:25Z\"\n  name: storefront\n  namespace: scn-shop\n  resourceVersion: \"22753\"\n  uid: 83cf7d41-78a0-49a9-a19d-cbaea50c618a\nspec:\n  clusterIP: 10.96.169.146\n  clusterIPs:\n  - 10.96.169.146\n  internalTrafficPolicy: Cluster\n  ipFamilies:\n  - IPv4\n  ipFamilyPolicy: SingleStack\n  ports:\n  - port: 80\n    protocol: TCP\n    targetPort: 8080\n  selector:\n    app: shop-front\n  sessionAffinity: None\n  type: ClusterIP\nstatus:\n  loadBalancer: {}\n"
+                }
+              }
+            },
+            "metadata": {
+              "adk_type": "function_response"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-93ba-7dd0-b86d-c4c0265177ec",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 120,
+            "promptTokenCount": 3925,
+            "totalTokenCount": 4045
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "args": {
+                "namespace": "scn-shop",
+                "resource_name": "shop-frontend",
+                "resource_type": "deployment"
+              },
+              "id": "c7938714-a21e-4616-9eb8-c9b45b242cc5",
+              "name": "k8s_get_resource_yaml"
+            },
+            "metadata": {
+              "adk_is_long_running": false,
+              "adk_type": "function_call"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-93da-7aff-a346-80d635a10be7",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "id": "c7938714-a21e-4616-9eb8-c9b45b242cc5",
+              "name": "k8s_get_resource_yaml",
+              "response": {
+                "output": {
+                  "output": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    deployment.kubernetes.io/revision: \"1\"\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"shop-frontend\"},\"name\":\"shop-frontend\",\"namespace\":\"scn-shop\"},\"spec\":{\"replicas\":2,\"selector\":{\"matchLabels\":{\"app\":\"shop-frontend\"}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"shop-frontend\"}},\"spec\":{\"containers\":[{\"command\":[\"sh\",\"-c\",\"mkdir -p /www \\u0026\\u0026 echo \\\"storefront ok\\\" \\u003e /www/index.html\\nexec httpd -f -p 8080 -h /www\\n\"],\"image\":\"docker.io/library/busybox:1.37.0\",\"name\":\"web\",\"ports\":[{\"containerPort\":8080}],\"readinessProbe\":{\"httpGet\":{\"path\":\"/\",\"port\":8080},\"periodSeconds\":2},\"resources\":{\"limits\":{\"memory\":\"32Mi\"},\"requests\":{\"cpu\":\"10m\",\"memory\":\"16Mi\"}}}],\"terminationGracePeriodSeconds\":1}}}}\n  creationTimestamp: \"2026-11-24T22:20:25Z\"\n  generation: 1\n  labels:\n    app: shop-frontend\n  name: shop-frontend\n  namespace: scn-shop\n  resourceVersion: \"22784\"\n  uid: 21f62cd2-f6ff-4028-95cc-3ff4439ffc61\nspec:\n  progressDeadlineSeconds: 600\n  replicas: 2\n  revisionHistoryLimit: 10\n  selector:\n    matchLabels:\n      app: shop-frontend\n  strategy:\n    rollingUpdate:\n      maxSurge: 25%\n      maxUnavailable: 25%\n    type: RollingUpdate\n  template:\n    metadata:\n      labels:\n        app: shop-frontend\n    spec:\n      containers:\n      - command:\n        - sh\n        - -c\n        - |\n          mkdir -p /www \u0026\u0026 echo \"storefront ok\" \u003e /www/index.html\n          exec httpd -f -p 8080 -h /www\n        image: docker.io/library/busybox:1.37.0\n        imagePullPolicy: IfNotPresent\n        name: web\n        ports:\n        - containerPort: 8080\n          protocol: TCP\n        readinessProbe:\n          failureThreshold: 3\n          httpGet:\n            path: /\n            port: 8080\n            scheme: HTTP\n          periodSeconds: 2\n          successThreshold: 1\n          timeoutSeconds: 1\n        resources:\n          limits:\n            memory: 32Mi\n          requests:\n            cpu: 10m\n            memory: 16Mi\n        terminationMessagePath: /dev/termination-log\n        terminationMessagePolicy: File\n      dnsPolicy: ClusterFirst\n      restartPolicy: Always\n      schedulerName: default-scheduler\n      securityContext: {}\n      terminationGracePeriodSeconds: 1\nstatus:\n  availableReplicas: 2\n  conditions:\n  - lastTransitionTime: \"2026-11-24T22:20:25Z\"\n    lastUpdateTime: \"2026-11-24T22:20:25Z\"\n    message: Deployment has minimum availability.\n    reason: MinimumReplicasAvailable\n    status: \"True\"\n    type: Available\n  - lastTransitionTime: \"2026-11-24T22:20:25Z\"\n    lastUpdateTime: \"2026-11-24T22:20:25Z\"\n    message: ReplicaSet \"shop-frontend-69df64b78f\" has successfully progressed.\n    reason: NewReplicaSetAvailable\n    status: \"True\"\n    type: Progressing\n  observedGeneration: 1\n  readyReplicas: 2\n  replicas: 2\n  terminatingReplicas: 0\n  updatedReplicas: 2\n"
+                }
+              }
+            },
+            "metadata": {
+              "adk_type": "function_response"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-9ed4-7126-8de5-cd5397a61684",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 187,
+            "promptTokenCount": 4996,
+            "totalTokenCount": 5183
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "text",
+            "text": "I've found the root cause. Let me verify with a few more checks:"
+          },
+          {
+            "kind": "data",
+            "data": {
+              "args": {
+                "namespace": "scn-shop"
+              },
+              "id": "d98f2233-bb83-4d4c-afe6-485ba61b030b",
+              "name": "k8s_get_events"
+            },
+            "metadata": {
+              "adk_is_long_running": false,
+              "adk_type": "function_call"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-9ef5-739d-b1ed-7d3d56ed4969",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "data",
+            "data": {
+              "id": "d98f2233-bb83-4d4c-afe6-485ba61b030b",
+              "name": "k8s_get_events",
+              "response": {
+                "output": {
+                  "output": "{\n    \"apiVersion\": \"v1\",\n    \"items\": [\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"v1\",\n                \"kind\": \"Pod\",\n                \"name\": \"shop-frontend-69df64b78f-qpjpf\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22757\",\n                \"uid\": \"53f04d93-1e61-4b6c-9317-8554082ef9b6\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Successfully assigned scn-shop/shop-frontend-69df64b78f-qpjpf to airgap-sre-control-plane\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f-qpjpf.18eb1b3d009ec06b\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22764\",\n                \"uid\": \"92e6edce-f543-4911-ad22-49cb6c5a6b90\"\n            },\n            \"reason\": \"Scheduled\",\n            \"reportingComponent\": \"default-scheduler\",\n            \"reportingInstance\": \"\",\n            \"source\": {\n                \"component\": \"default-scheduler\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"v1\",\n                \"fieldPath\": \"spec.containers{web}\",\n                \"kind\": \"Pod\",\n                \"name\": \"shop-frontend-69df64b78f-qpjpf\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22760\",\n                \"uid\": \"53f04d93-1e61-4b6c-9317-8554082ef9b6\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Container image \\\"docker.io/library/busybox:1.37.0\\\" already present on machine and can be accessed by the pod\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f-qpjpf.18eb1b3d1c0fb4f9\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22771\",\n                \"uid\": \"fa9d9f32-e6e3-4be7-81e6-308f331e340b\"\n            },\n            \"reason\": \"Pulled\",\n            \"reportingComponent\": \"kubelet\",\n            \"reportingInstance\": \"airgap-sre-control-plane\",\n            \"source\": {\n                \"component\": \"kubelet\",\n                \"host\": \"airgap-sre-control-plane\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"v1\",\n                \"fieldPath\": \"spec.containers{web}\",\n                \"kind\": \"Pod\",\n                \"name\": \"shop-frontend-69df64b78f-qpjpf\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22760\",\n                \"uid\": \"53f04d93-1e61-4b6c-9317-8554082ef9b6\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Container created\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f-qpjpf.18eb1b3d1fbd8882\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22774\",\n                \"uid\": \"90635a27-be6e-4afe-8fca-4590b6db5025\"\n            },\n            \"reason\": \"Created\",\n            \"reportingComponent\": \"kubelet\",\n            \"reportingInstance\": \"airgap-sre-control-plane\",\n            \"source\": {\n                \"component\": \"kubelet\",\n                \"host\": \"airgap-sre-control-plane\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"v1\",\n                \"fieldPath\": \"spec.containers{web}\",\n                \"kind\": \"Pod\",\n                \"name\": \"shop-frontend-69df64b78f-qpjpf\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22760\",\n                \"uid\": \"53f04d93-1e61-4b6c-9317-8554082ef9b6\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Container started\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f-qpjpf.18eb1b3d23560231\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22776\",\n                \"uid\": \"07be609e-fc39-4935-a5b8-bf141cf2490e\"\n            },\n            \"reason\": \"Started\",\n            \"reportingComponent\": \"kubelet\",\n            \"reportingInstance\": \"airgap-sre-control-plane\",\n            \"source\": {\n                \"component\": \"kubelet\",\n                \"host\": \"airgap-sre-control-plane\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"v1\",\n                \"kind\": \"Pod\",\n                \"name\": \"shop-frontend-69df64b78f-xbczt\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22752\",\n                \"uid\": \"eb2e35a7-15a6-451a-b189-b0bd03ef8c7f\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Successfully assigned scn-shop/shop-frontend-69df64b78f-xbczt to airgap-sre-control-plane\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f-xbczt.18eb1b3cffbb323e\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22761\",\n                \"uid\": \"5c531e6e-71a7-41a1-8c04-0e0fad6eb8f1\"\n            },\n            \"reason\": \"Scheduled\",\n            \"reportingComponent\": \"default-scheduler\",\n            \"reportingInstance\": \"\",\n            \"source\": {\n                \"component\": \"default-scheduler\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"v1\",\n                \"fieldPath\": \"spec.containers{web}\",\n                \"kind\": \"Pod\",\n                \"name\": \"shop-frontend-69df64b78f-xbczt\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22754\",\n                \"uid\": \"eb2e35a7-15a6-451a-b189-b0bd03ef8c7f\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Container image \\\"docker.io/library/busybox:1.37.0\\\" already present on machine and can be accessed by the pod\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f-xbczt.18eb1b3d1b217f48\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22769\",\n                \"uid\": \"e4973a11-157f-4a21-8b22-0d10e98ac9ac\"\n            },\n            \"reason\": \"Pulled\",\n            \"reportingComponent\": \"kubelet\",\n            \"reportingInstance\": \"airgap-sre-control-plane\",\n            \"source\": {\n                \"component\": \"kubelet\",\n                \"host\": \"airgap-sre-control-plane\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"v1\",\n                \"fieldPath\": \"spec.containers{web}\",\n                \"kind\": \"Pod\",\n                \"name\": \"shop-frontend-69df64b78f-xbczt\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22754\",\n                \"uid\": \"eb2e35a7-15a6-451a-b189-b0bd03ef8c7f\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Container created\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f-xbczt.18eb1b3d1ef42afd\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22773\",\n                \"uid\": \"3d751a7f-df3e-47d2-9859-edfc849d984d\"\n            },\n            \"reason\": \"Created\",\n            \"reportingComponent\": \"kubelet\",\n            \"reportingInstance\": \"airgap-sre-control-plane\",\n            \"source\": {\n                \"component\": \"kubelet\",\n                \"host\": \"airgap-sre-control-plane\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"v1\",\n                \"fieldPath\": \"spec.containers{web}\",\n                \"kind\": \"Pod\",\n                \"name\": \"shop-frontend-69df64b78f-xbczt\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22754\",\n                \"uid\": \"eb2e35a7-15a6-451a-b189-b0bd03ef8c7f\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Container started\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f-xbczt.18eb1b3d22ec9e71\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22775\",\n                \"uid\": \"65b9ccc1-3109-4817-91f2-b0bdbf3c25e1\"\n            },\n            \"reason\": \"Started\",\n            \"reportingComponent\": \"kubelet\",\n            \"reportingInstance\": \"airgap-sre-control-plane\",\n            \"source\": {\n                \"component\": \"kubelet\",\n                \"host\": \"airgap-sre-control-plane\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"apps/v1\",\n                \"kind\": \"ReplicaSet\",\n                \"name\": \"shop-frontend-69df64b78f\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22748\",\n                \"uid\": \"60422533-6b85-4f27-9de3-4b1d77e83f2a\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Created pod: shop-frontend-69df64b78f-xbczt\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f.18eb1b3cff3ae303\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22755\",\n                \"uid\": \"ea93c28f-3d9b-4552-8f2d-37d4f3381b06\"\n            },\n            \"reason\": \"SuccessfulCreate\",\n            \"reportingComponent\": \"replicaset-controller\",\n            \"reportingInstance\": \"\",\n            \"source\": {\n                \"component\": \"replicaset-controller\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"apps/v1\",\n                \"kind\": \"ReplicaSet\",\n                \"name\": \"shop-frontend-69df64b78f\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22748\",\n                \"uid\": \"60422533-6b85-4f27-9de3-4b1d77e83f2a\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Created pod: shop-frontend-69df64b78f-qpjpf\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend-69df64b78f.18eb1b3cffb920ef\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22762\",\n                \"uid\": \"71ce01f9-e1ab-4488-aa8d-5d55195cf495\"\n            },\n            \"reason\": \"SuccessfulCreate\",\n            \"reportingComponent\": \"replicaset-controller\",\n            \"reportingInstance\": \"\",\n            \"source\": {\n                \"component\": \"replicaset-controller\"\n            },\n            \"type\": \"Normal\"\n        },\n        {\n            \"apiVersion\": \"v1\",\n            \"count\": 1,\n            \"eventTime\": null,\n            \"firstTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"involvedObject\": {\n                \"apiVersion\": \"apps/v1\",\n                \"kind\": \"Deployment\",\n                \"name\": \"shop-frontend\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22747\",\n                \"uid\": \"21f62cd2-f6ff-4028-95cc-3ff4439ffc61\"\n            },\n            \"kind\": \"Event\",\n            \"lastTimestamp\": \"2026-11-24T22:20:25Z\",\n            \"message\": \"Scaled up replica set shop-frontend-69df64b78f from 0 to 2\",\n            \"metadata\": {\n                \"creationTimestamp\": \"2026-11-24T22:20:25Z\",\n                \"name\": \"shop-frontend.18eb1b3cfe7da18a\",\n                \"namespace\": \"scn-shop\",\n                \"resourceVersion\": \"22749\",\n                \"uid\": \"ee0d4e93-c764-433c-a935-de6b9f0df36e\"\n            },\n            \"reason\": \"ScalingReplicaSet\",\n            \"reportingComponent\": \"deployment-controller\",\n            \"reportingInstance\": \"\",\n            \"source\": {\n                \"component\": \"deployment-controller\"\n            },\n            \"type\": \"Normal\"\n        }\n    ],\n    \"kind\": \"List\",\n    \"metadata\": {\n        \"resourceVersion\": \"\"\n    }\n}\n"
+                }
+              }
+            },
+            "metadata": {
+              "adk_type": "function_response"
+            }
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      },
+      {
+        "kind": "message",
+        "messageId": "01a20fa5-b3a4-7b7d-9e49-f043068e479b",
+        "contextId": "01a20fa5-666d-768a-886a-40bd881fabfb",
+        "metadata": {
+          "adk_app_name": "kagent__NS__sre_agent",
+          "adk_author": "sre_agent",
+          "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+          "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+          "adk_usage_metadata": {
+            "candidatesTokenCount": 324,
+            "promptTokenCount": 10030,
+            "totalTokenCount": 10354
+          },
+          "adk_user_id": "admin@kagent.dev"
+        },
+        "parts": [
+          {
+            "kind": "text",
+            "text": "## Root Cause Analysis\n\n**What's broken:** The Service `storefront` cannot route traffic to the application pods because there are no endpoints configured for it.\n\n**Evidence:**\n- The Service `storefront` has selector `app=shop-front` (note: \"shop-front\")\n- The actual pods have label `app=shop-frontend` (note: \"shop-frontend\")\n- These labels do not match, so the Service has no endpoints\n\n**Root cause category:** `service_selector_mismatch`\n\n```json\n{\n  \"root_cause_category\": \"service_selector_mismatch\",\n  \"resources\": [\n    {\"kind\": \"Service\", \"name\": \"storefront\"},\n    {\"kind\": \"Pod\", \"name\": \"shop-frontend-69df64b78f-qpjpf\"},\n    {\"kind\": \"Label\", \"value\": \"app=shop-front\"}\n  ],\n  \"summary\": \"The Service storefront selector app=shop-front does not match the pod labels app=shop-frontend, resulting in no endpoints.\"\n}\n```"
+          }
+        ],
+        "role": "agent",
+        "taskId": "01a20fa5-666d-7651-b52f-f5361b31c116"
+      }
+    ],
+    "metadata": {
+      "adk_app_name": "kagent__NS__sre_agent",
+      "adk_author": "sre_agent",
+      "adk_invocation_id": "e-26bd3aae-f7c0-4451-8bb5-fba841da4844",
+      "adk_session_id": "01a20fa5-666d-768a-886a-40bd881fabfb",
+      "adk_usage_metadata": {
+        "candidatesTokenCount": 324,
+        "promptTokenCount": 10030,
+        "totalTokenCount": 10354
+      },
+      "adk_user_id": "admin@kagent.dev"
+    },
+    "status": {
+      "state": "completed",
+      "timestamp": "2026-11-24T22:20:47.396778375Z"
+    }
+  }
+}
+

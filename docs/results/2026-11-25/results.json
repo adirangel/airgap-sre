@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "date": "2026-11-25",
+    "started": "2026-11-25 00:16 IST",
+    "provider": "Ollama",
+    "model": "qwen3.5:4b",
+    "kagentVersion": "0.10.7",
+    "agent": "sre-agent",
+    "tools": [
+      "k8s_get_resources",
+      "k8s_describe_resource",
+      "k8s_get_resource_yaml",
+      "k8s_get_pod_logs",
+      "k8s_get_events",
+      "k8s_get_available_api_resources"
+    ],
+    "commit": "73a94ad"
+  },
+  "passed": 5,
+  "total": 5,
+  "points": 5,
+  "results": [
+    {
+      "order": 1,
+      "id": "crashloop-bad-config",
+      "title": "CrashLoopBackOff from a bad config value",
+      "symptom": "The checkout service in namespace scn-checkout is down. Find the root cause.",
+      "score": {
+        "scenario": "crashloop-bad-config",
+        "expectedCategory": "bad_config",
+        "gotCategory": "bad_config",
+        "categoryCorrect": true,
+        "names": [
+          {
+            "kind": "Deployment",
+            "name": "checkout",
+            "named": true
+          },
+          {
+            "kind": "ConfigMap",
+            "name": "checkout-config",
+            "named": true
+          },
+          {
+            "kind": "ConfigKey",
+            "name": "DB_PORT",
+            "named": true
+          }
+        ],
+        "namedCount": 3,
+        "structured": true,
+        "points": 1,
+        "pass": true
+      },
+      "answer": "The checkout service is down because the pod is crashing repeatedly (CrashLoopBackOff). The container exits with code 1 due to an invalid configuration value for `DB_PORT`.\n\n**Evidence:**\n- Pod `checkout-69f48dc5fd-2qxll` shows status `CrashLoopBackOff` with 4 restarts\n- Container logs show: `FATAL: invalid configuration: DB_PORT='5432a' is not a valid port number`\n- The ConfigMap `checkout-config` contains `DB_PORT: 5432a`, which is not a valid numeric port\n\n**Root cause:** The `DB_PORT` value in the ConfigMap is malformed (`5432a` instead of a numeric port like `5432`). This causes the application to exit immediately on startup.\n\n```json\n{\n  \"root_cause_category\": \"bad_config\",\n  \"resources\": [\n    {\"kind\": \"ConfigKey\", \"name\": \"checkout-config.DB_PORT\"},\n    {\"kind\": \"ConfigMap\", \"name\": \"checkout-config\"}\n  ],\n  \"summary\": \"The checkout pod crashes because the DB_PORT configuration value '5432a' in ConfigMap checkout-config is not a valid numeric port number.\"\n}\n```",
+      "seconds": 11.3649019,
+      "toolCalls": 4,
+      "tokens": 14904,
+      "transcript": "transcripts/01-crashloop-bad-config.md"
+    },
+    {
+      "order": 2,
+      "id": "oomkilled",
+      "title": "OOMKilled",
+      "symptom": "Reports are not being generated in namespace scn-reports. Find the root cause.",
+      "score": {
+        "scenario": "oomkilled",
+        "expectedCategory": "oom_killed",
+        "gotCategory": "oom_killed",
+        "categoryCorrect": true,
+        "names": [
+          {
+            "kind": "Deployment",
+            "name": "report-generator",
+            "named": true
+          }
+        ],
+        "namedCount": 1,
+        "structured": true,
+        "points": 1,
+        "pass": true
+      },
+      "answer": "Based on my investigation, I found the root cause:\n\n**What's broken:** The `report-generator` deployment pods are being killed repeatedly because they exceed their memory limit. The pod `report-generator-864d75f9-s5bn5` shows status `OOMKilled` with restart count of 1.\n\n**Evidence:**\n- Pod `report-generator-864d75f9-s5bn5` has state: Terminated, Reason: OOMKilled, Exit Code: 137\n- The container command is `tail /dev/zero` which continuously writes to zero, causing unbounded memory consumption\n- Memory limit is set to only 32Mi while the container requests 16Mi\n- Deployment shows 0 available replicas and 1 unavailable\n\n**Root cause:** The container is being killed for using more memory than its limit. The `tail /dev/zero` command continuously allocates memory without bound, exceeding the 32Mi memory limit set in the deployment spec.\n\n```json\n{\n  \"root_cause_category\": \"oom_killed\",\n  \"resources\": [\n    {\"kind\": \"Pod\", \"name\": \"report-generator-864d75f9-s5bn5\"},\n    {\"kind\": \"Deployment\", \"name\": \"report-generator\", \"namespace\": \"scn-reports\"}\n  ],\n  \"summary\": \"The report-generator container is OOMKilled because tail /dev/zero consumes unbounded memory exceeding the 32Mi limit\"\n}\n```",
+      "seconds": 12.8056583,
+      "toolCalls": 6,
+      "tokens": 15114,
+      "transcript": "transcripts/02-oomkilled.md"
+    },
+    {
+      "order": 3,
+      "id": "imagepull-not-mirrored",
+      "title": "ImagePullBackOff because the image was never mirrored",
+      "symptom": "The session-cache workload in namespace scn-sessions never starts. Find the root cause.",
+      "score": {
+        "scenario": "imagepull-not-mirrored",
+        "expectedCategory": "image_pull_failure",
+        "gotCategory": "image_pull_failure",
+        "categoryCorrect": true,
+        "names": [
+          {
+            "kind": "Deployment",
+            "name": "session-cache",
+            "named": true
+          },
+          {
+            "kind": "Image",
+            "name": "redis:7.4-alpine",
+            "named": true
+          }
+        ],
+        "namedCount": 2,
+        "structured": true,
+        "points": 1,
+        "pass": true
+      },
+      "answer": "Based on my investigation, the pod `session-cache-6bb4646854-vzbwl` is stuck in `ErrImagePull` state. The events clearly show that Kubernetes attempted to pull the image `docker.io/library/redis:7.4-alpine` but received a \"NotFound\" error - the image cannot be resolved or pulled from the registry.\n\nThe deployment spec confirms the container uses this exact image, and the pod is on node `airgap-sre-control-plane`. The scheduler successfully placed the pod (no scheduling issues), but the kubelet failed to pull the container image.\n\n**Root cause:** The image `docker.io/library/redis:7.4-alpine` is not available in the registry or cannot be pulled by the cluster's image registry.\n\n```json\n{\n  \"root_cause_category\": \"image_pull_failure\",\n  \"resources\": [\n    {\"kind\": \"Pod\", \"name\": \"session-cache-6bb4646854-vzbwl\"},\n    {\"kind\": \"Deployment\", \"name\": \"session-cache\"},\n    {\"kind\": \"Image\", \"name\": \"docker.io/library/redis:7.4-alpine\"}\n  ],\n  \"summary\": \"The pod cannot start because the container image docker.io/library/redis:7.4-alpine cannot be pulled from the registry.\"\n}\n```",
+      "seconds": 12.9322061,
+      "toolCalls": 4,
+      "tokens": 16321,
+      "transcript": "transcripts/03-imagepull-not-mirrored.md"
+    },
+    {
+      "order": 4,
+      "id": "pending-unschedulable",
+      "title": "Pod Pending from an unsatisfiable nodeSelector",
+      "symptom": "The batch-worker pods in namespace scn-batch never start. Find the root cause.",
+      "score": {
+        "scenario": "pending-unschedulable",
+        "expectedCategory": "unschedulable",
+        "gotCategory": "unschedulable",
+        "categoryCorrect": true,
+        "names": [
+          {
+            "kind": "Deployment",
+            "name": "batch-worker",
+            "named": true
+          },
+          {
+            "kind": "NodeLabel",
+            "name": "disktype",
+            "named": true
+          }
+        ],
+        "namedCount": 2,
+        "structured": true,
+        "points": 1,
+        "pass": true
+      },
+      "answer": "Based on my investigation, here's what I found:\n\n**What is broken:** The batch-worker pod (`batch-worker-97cf85589-9qdq8`) is stuck in \"Pending\" status and cannot be scheduled.\n\n**Evidence:**\n- The event from the default-scheduler shows: `0/1 nodes are available: 1 node(s) didn't match Pod's node affinity/selector`\n- The Deployment `batch-worker` has a `nodeSelector` configured with `disktype: ssd`\n- The pod description confirms it inherits this selector via `spec.template.spec.nodeSelector.disktype: ssd`\n\n**Root cause:** The scheduler cannot place the pod because no nodes in the cluster match the required node selector `disktype=ssd`. This is a classic unschedulable scenario caused by a mismatch between the pod's scheduling requirements and available node labels.\n\n```json\n{\n  \"root_cause_category\": \"unschedulable\",\n  \"resources\": [\n    {\"kind\": \"Pod\", \"name\": \"batch-worker-97cf85589-9qdq8\"},\n    {\"kind\": \"Deployment\", \"name\": \"batch-worker\", \"namespace\": \"scn-batch\"}\n  ],\n  \"summary\": \"The pod cannot be scheduled because the nodeSelector disktype=ssd does not match any available nodes in the cluster.\"\n}\n```",
+      "seconds": 25.6819365,
+      "toolCalls": 11,
+      "tokens": 47933,
+      "transcript": "transcripts/04-pending-unschedulable.md"
+    },
+    {
+      "order": 5,
+      "id": "service-selector-mismatch",
+      "title": "Service with a selector mismatch (no endpoints)",
+      "symptom": "Requests to storefront in namespace scn-shop fail with connection refused, although the application pods look healthy. Find the root cause.",
+      "score": {
+        "scenario": "service-selector-mismatch",
+        "expectedCategory": "service_selector_mismatch",
+        "gotCategory": "service_selector_mismatch",
+        "categoryCorrect": true,
+        "names": [
+          {
+            "kind": "Service",
+            "name": "storefront",
+            "named": true
+          },
+          {
+            "kind": "Deployment",
+            "name": "shop-frontend",
+            "named": true
+          }
+        ],
+        "namedCount": 2,
+        "structured": true,
+        "points": 1,
+        "pass": true
+      },
+      "answer": "## Root Cause Analysis\n\n**What's broken:** The Service `storefront` cannot route traffic to the application pods because there are no endpoints configured for it.\n\n**Evidence:**\n- The Service `storefront` has selector `app=shop-front` (note: \"shop-front\")\n- The actual pods have label `app=shop-frontend` (note: \"shop-frontend\")\n- These labels do not match, so the Service has no endpoints\n\n**Root cause category:** `service_selector_mismatch`\n\n```json\n{\n  \"root_cause_category\": \"service_selector_mismatch\",\n  \"resources\": [\n    {\"kind\": \"Service\", \"name\": \"storefront\"},\n    {\"kind\": \"Pod\", \"name\": \"shop-frontend-69df64b78f-qpjpf\"},\n    {\"kind\": \"Label\", \"value\": \"app=shop-front\"}\n  ],\n  \"summary\": \"The Service storefront selector app=shop-front does not match the pod labels app=shop-frontend, resulting in no endpoints.\"\n}\n```",
+      "seconds": 19.8757319,
+      "toolCalls": 8,
+      "tokens": 34492,
+      "transcript": "transcripts/05-service-selector-mismatch.md"
+    }
+  ]
+}
