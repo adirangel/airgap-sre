@@ -1,0 +1,60 @@
+# Pinned versions for everything labctl downloads or runs.
+# Reasons and sources: see VERSIONS.md. Do not edit from memory.
+
+# Binaries downloaded by `labctl tools install` into .tools/ (gitignored).
+# URL placeholders: {version} {os} {arch} {exe} (".exe" on Windows, else "")
+# {archive} ("zip" on Windows, else "tar.gz").
+# sha256 is the checksum of the downloaded file (binary or archive), as
+# published by the upstream project.
+tools:
+  - name: kind
+    version: v0.33.0
+    url: "https://github.com/kubernetes-sigs/kind/releases/download/{version}/kind-{os}-{arch}"
+    sha256:
+      windows/amd64: 4b22adaa135368c5a465d56bbd8e520cbea87272a06ca00b6078e7b81515c9fc
+      linux/amd64: aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d
+      linux/arm64: 20022bee6cfcd5086cb7234d218e3454e6090022f2a8f55d1fa7fcf42c3867a2
+      darwin/amd64: 5a99f26f57246dc9319dd294803313197a0f34d33c525b3ea8b655db5916ece0
+      darwin/arm64: 0c8c7dbe5e23594a198b786c4bc13dacc101fa6196b0cb0b23a1ca44e61f4b4f
+
+  - name: kubectl
+    version: v1.37.2
+    url: "https://dl.k8s.io/release/{version}/bin/{os}/{arch}/kubectl{exe}"
+    sha256:
+      windows/amd64: 1691938f7de0e931969f9968c3601cf32d6b0d573573afb4ce471f3d28f51984
+      linux/amd64: c04487523e7aa7d1493f7808174c899db93d7a9cf57531420cd76b9bd415f8f4
+      linux/arm64: fcc16f63186659d9722014b7e02d5fdd2d4e669cb8c0ab66365d7d3b8ba03509
+      darwin/amd64: 88379aff5c8111de6be0a394adffba2819e44cde269f3ab23cef76de1a48eaa8
+      darwin/arm64: 55701af0d51815ee335f240e48acf0959c3c23017ed3fa816e880c4a92bae581
+
+  - name: helm
+    version: v4.3.2
+    url: "https://get.helm.sh/helm-{version}-{os}-{arch}.{archive}"
+    # Path of the binary inside the archive.
+    archivePath: "{os}-{arch}/helm{exe}"
+    sha256:
+      windows/amd64: 77c5c782aaef1abbfafe75b88412d2b6df8e4a36d14522273397f0d02c6ecc29
+      linux/amd64: d1c0278d46beab79582d7e50f5b3dc206944ba8e577cde618513fd07daa53983
+      linux/arm64: df31cb61680ef728f82c770e5280dd565617bee6b039d37e85c677288be4bbb0
+      darwin/amd64: 9e0068e9ae18c441d27388190ee7f53ae65eba44bfe910b40bdac44c4b51fa71
+      darwin/arm64: 6f3421de3a8cc2ac578c8cfb33b8edde290dde2871bc1bab12e24f2e5caeaa90
+
+lab:
+  clusterName: airgap-sre
+  # kind requires the @sha256 digest that matches the kind release.
+  nodeImage: "kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5"
+  kindConfig: kind/cluster.yaml
+  registry:
+    # Plain CNCF Distribution registry (not Harbor). Runs as a Docker container
+    # on the host, owned by labctl.
+    image: "registry:3.1.2@sha256:82f6ff4a7f982960c8aa51617fea3aabc485df6e55cce80d22deb1de36f1bc3c"
+    containerName: airgap-sre-registry
+    volumeName: airgap-sre-registry-data
+    hostPort: 5001
+  # Real public images that must never be listed in images.yaml.
+  # `labctl lab verify` proves the cluster cannot pull them. The first comes
+  # from a registry with its own redirect; the second from a registry that
+  # only the catch-all (_default) rule covers.
+  unmirroredImages:
+    - "docker.io/library/hello-world:latest"
+    - "public.ecr.aws/docker/library/hello-world:latest"

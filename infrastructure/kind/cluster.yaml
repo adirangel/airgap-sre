@@ -1,0 +1,10 @@
+# kind cluster for the airgap-sre lab. Created by `labctl lab up`.
+#
+# The image-level air gap is NOT configured here: labctl writes containerd
+# hosts.toml files into the node after creation (see
+# backend/internal/lab/hosts.go). With kind v0.27+ node images, containerd
+# already reads /etc/containerd/certs.d, so no containerdConfigPatches needed.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane

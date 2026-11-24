@@ -29,3 +29,30 @@ jobs:
           version: v2.15.0
       - name: unit tests
         run: go test ./...
+
+  lab-e2e:
+    name: lab e2e (kind, no LLM)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-go@v7.1.0
+        with:
+          go-version-file: go.mod
+      - name: build labctl
+        run: go build -o bin/labctl ./backend/cmd/labctl
+      - name: lab up
+        run: bin/labctl lab up
+      - name: mirror base images
+        run: bin/labctl lab mirror --group base
+      - name: verify air gap (mirrored runs, un-mirrored cannot pull)
+        run: bin/labctl lab verify
+      - name: lab status
+        if: always()
+        run: bin/labctl lab status
+      - name: cleanup dry-run
+        if: always()
+        run: bin/labctl cleanup --dry-run
+      - name: cleanup
+        if: always()
+        run: bin/labctl cleanup

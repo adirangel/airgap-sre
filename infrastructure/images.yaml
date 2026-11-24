@@ -1,0 +1,15 @@
+# Every image the lab cluster is allowed to run.
+#
+# The cluster can pull ONLY from the lab registry, so anything not listed here
+# (and mirrored with `labctl lab mirror`) fails with ImagePullBackOff.
+#
+# ref    - upstream reference with an explicit tag. Pod specs keep using this
+#          exact name; containerd on the nodes redirects it to the lab registry.
+# digest - upstream digest of that tag (the multi-arch index). `lab mirror`
+#          refuses to copy if upstream no longer matches.
+# groups - `labctl lab mirror --group <name>` copies one group; default is all.
+images:
+  - ref: docker.io/library/busybox:1.37.0
+    digest: sha256:a7dbc319b1438115a207e11930dc4bb3e643dcb3ec0bdd694bb36cd8fad289ec
+    groups: [base]
+    why: Workload image for `labctl lab verify` and the failure scenarios.

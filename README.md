@@ -8,7 +8,7 @@ This repository currently covers the first four milestones:
 | Milestone | What it gives you | Status |
 | --- | --- | --- |
 | M0 Bootstrap | Layout, rules, CI, footprint tracking | done |
-| M1 Lab | kind cluster + local registry; the cluster can pull **only** from that registry | planned |
+| M1 Lab | kind cluster + local registry; the cluster can pull **only** from that registry | done |
 | M2 Scenarios | Five reproducible failures with inject / verify / reset | planned |
 | M3 Agent baseline | A [kagent](https://kagent.dev) agent scored against the scenarios | planned |
 
@@ -28,13 +28,40 @@ globally. See [docs/FOOTPRINT.md](docs/FOOTPRINT.md).
 
 ## Quickstart
 
-_Filled in as milestones land._
+All commands run from the repo root, in PowerShell (or any shell).
 
 ```powershell
 git clone https://github.com/adirangel/airgap-sre.git
 cd airgap-sre
-go run ./backend/cmd/labctl --help
+
+# 1. Registry + kind cluster. Downloads kind/kubectl/helm into .tools/ first.
+go run ./backend/cmd/labctl lab up
+
+# 2. Copy the allowed images into the lab registry.
+go run ./backend/cmd/labctl lab mirror --group base
+
+# 3. Prove the air gap: a mirrored image runs, un-mirrored public images cannot be pulled.
+go run ./backend/cmd/labctl lab verify
+
+go run ./backend/cmd/labctl lab status
+go run ./backend/cmd/labctl lab down      # delete cluster + registry container (mirrored images are kept)
 ```
+
+The lab kubeconfig is `.lab/kubeconfig`; `~/.kube/config` is never touched.
+To use kubectl yourself:
+
+```powershell
+.\.tools\kubectl-v1.37.2\kubectl.exe --kubeconfig .lab\kubeconfig get pods -A
+```
+
+### How the air gap works
+
+Image-level only (for now): containerd on the node is configured so that
+every registry — docker.io, ghcr.io, and a catch-all for everything else —
+resolves **only** to the lab registry. Pod specs keep their original image
+names. An image that was not mirrored fails with `ImagePullBackOff`.
+Network egress stays open until local models arrive. Details:
+[infrastructure/VERSIONS.md](infrastructure/VERSIONS.md).
 
 ## Removing everything
 
