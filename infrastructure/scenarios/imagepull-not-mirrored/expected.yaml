@@ -1,0 +1,6 @@
+rootCauseCategory: image_pull_failure
+mustName:
+  - kind: Deployment
+    name: session-cache
+  - kind: Image
+    name: redis:7.4-alpine

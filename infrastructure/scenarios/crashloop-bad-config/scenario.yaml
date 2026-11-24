@@ -1,0 +1,17 @@
+id: crashloop-bad-config
+order: 1
+title: CrashLoopBackOff from a bad config value
+description: >
+  The checkout Deployment reads DB_PORT from the ConfigMap checkout-config.
+  The value is not a number, so the process exits at start-up and the pod
+  goes into CrashLoopBackOff.
+namespace: scn-checkout
+symptom: >
+  The checkout service in namespace scn-checkout is down.
+  Find the root cause.
+verify:
+  timeoutSeconds: 180
+  checks:
+    - type: containerWaiting
+      selector: app=checkout
+      reasons: [CrashLoopBackOff]

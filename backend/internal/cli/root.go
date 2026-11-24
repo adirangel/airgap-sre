@@ -43,6 +43,6 @@ func NewRoot() *cobra.Command {
 		SilenceErrors: true,
 	}
 	root.PersistentFlags().StringVar(&a.repoRoot, "repo-root", "", "repository root (default: found by walking up from the current directory)")
-	root.AddCommand(newToolsCmd(a), newLabCmd(a), newCleanupCmd(a))
+	root.AddCommand(newToolsCmd(a), newLabCmd(a), newScenarioCmd(a), newCleanupCmd(a))
 	return root
 }

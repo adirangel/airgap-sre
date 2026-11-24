@@ -1,0 +1,19 @@
+id: oomkilled
+order: 2
+title: OOMKilled
+description: >
+  The report-generator Deployment needs far more memory than its 32Mi limit
+  allows, so the kernel kills the container (OOMKilled, exit code 137) on
+  every start. The report-api Deployment in the same namespace is healthy.
+namespace: scn-reports
+symptom: >
+  Reports are not being generated in namespace scn-reports.
+  Find the root cause.
+verify:
+  timeoutSeconds: 180
+  checks:
+    - type: containerTerminated
+      selector: app=report-generator
+      reasons: [OOMKilled]
+    - type: podsReady
+      selector: app=report-api

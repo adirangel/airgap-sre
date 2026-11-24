@@ -1,0 +1,6 @@
+rootCauseCategory: unschedulable
+mustName:
+  - kind: Deployment
+    name: batch-worker
+  - kind: NodeLabel
+    name: disktype

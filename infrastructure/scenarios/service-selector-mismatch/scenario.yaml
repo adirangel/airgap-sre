@@ -1,0 +1,19 @@
+id: service-selector-mismatch
+order: 5
+title: Service with a selector mismatch (no endpoints)
+description: >
+  The storefront Service selects pods with app=shop-front, but the
+  shop-frontend Deployment labels its pods app=shop-frontend. The pods are
+  healthy and Ready, yet the Service has no endpoints, so every request to
+  it fails.
+namespace: scn-shop
+symptom: >
+  Requests to storefront in namespace scn-shop fail with connection
+  refused, although the application pods look healthy. Find the root cause.
+verify:
+  timeoutSeconds: 180
+  checks:
+    - type: podsReady
+      selector: app=shop-frontend
+    - type: serviceNoEndpoints
+      service: storefront

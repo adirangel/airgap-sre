@@ -1,0 +1,21 @@
+id: imagepull-not-mirrored
+order: 3
+title: ImagePullBackOff because the image was never mirrored
+description: >
+  The session-cache Deployment uses a real public image that was never
+  copied into the lab registry. The cluster can pull only from the lab
+  registry, so the pull fails with "not found" and the pod sits in
+  ImagePullBackOff.
+namespace: scn-sessions
+symptom: >
+  The session-cache workload in namespace scn-sessions never
+  starts. Find the root cause.
+# Images this scenario uses on purpose although they are NOT in images.yaml.
+unmirroredImages:
+  - docker.io/library/redis:7.4-alpine
+verify:
+  timeoutSeconds: 180
+  checks:
+    - type: containerWaiting
+      selector: app=session-cache
+      reasons: [ErrImagePull, ImagePullBackOff]

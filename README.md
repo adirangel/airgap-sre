@@ -9,7 +9,7 @@ This repository currently covers the first four milestones:
 | --- | --- | --- |
 | M0 Bootstrap | Layout, rules, CI, footprint tracking | done |
 | M1 Lab | kind cluster + local registry; the cluster can pull **only** from that registry | done |
-| M2 Scenarios | Five reproducible failures with inject / verify / reset | planned |
+| M2 Scenarios | Five reproducible failures with inject / verify / reset | done |
 | M3 Agent baseline | A [kagent](https://kagent.dev) agent scored against the scenarios | planned |
 
 Local models and the full air-gap bundle come after M3.
@@ -53,6 +53,28 @@ To use kubectl yourself:
 ```powershell
 .\.tools\kubectl-v1.37.2\kubectl.exe --kubeconfig .lab\kubeconfig get pods -A
 ```
+
+### Failure scenarios
+
+Five reproducible failures live in
+[infrastructure/scenarios/](infrastructure/scenarios/). Each has broken
+manifests, a set of checks that prove the failure is really present, and an
+`expected.yaml` with the correct diagnosis.
+
+```powershell
+go run ./backend/cmd/labctl scenario list
+go run ./backend/cmd/labctl scenario inject oomkilled     # or --all
+go run ./backend/cmd/labctl scenario verify oomkilled     # waits until the failure shows up
+go run ./backend/cmd/labctl scenario reset oomkilled      # deletes the scenario namespace
+```
+
+| # | Scenario | Root-cause category |
+| --- | --- | --- |
+| 1 | `crashloop-bad-config` — CrashLoopBackOff from a bad config value | `bad_config` |
+| 2 | `oomkilled` — container killed for exceeding its memory limit | `oom_killed` |
+| 3 | `imagepull-not-mirrored` — image was never mirrored into the lab registry | `image_pull_failure` |
+| 4 | `pending-unschedulable` — nodeSelector no node satisfies | `unschedulable` |
+| 5 | `service-selector-mismatch` — Service selector matches no pods | `service_selector_mismatch` |
 
 ### How the air gap works
 

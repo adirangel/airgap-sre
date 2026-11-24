@@ -47,6 +47,14 @@ jobs:
         run: bin/labctl lab mirror --group base
       - name: verify air gap (mirrored runs, un-mirrored cannot pull)
         run: bin/labctl lab verify
+      - name: scenarios - list
+        run: bin/labctl scenario list
+      - name: scenarios - inject all five
+        run: bin/labctl scenario inject --all
+      - name: scenarios - verify each failure is present
+        run: bin/labctl scenario verify --all
+      - name: scenarios - reset
+        run: bin/labctl scenario reset --all
       - name: lab status
         if: always()
         run: bin/labctl lab status

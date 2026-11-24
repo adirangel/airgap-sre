@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-generator
+  labels:
+    app: report-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: report-generator
+  template:
+    metadata:
+      labels:
+        app: report-generator
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: generator
+          image: docker.io/library/busybox:1.37.0
+          # The fault: `tail /dev/zero` buffers without bound, like a process
+          # that loads a whole dataset into memory. The limit is 32Mi.
+          command: ["tail", "/dev/zero"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-api
+  labels:
+    app: report-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: report-api
+  template:
+    metadata:
+      labels:
+        app: report-api
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: api
+          image: docker.io/library/busybox:1.37.0
+          command: ["sh", "-c", "echo report-api ready; while true; do sleep 3600; done"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi

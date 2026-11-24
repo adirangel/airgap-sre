@@ -10,3 +10,4 @@ Everything that describes the lab and the systems the agent will work with.
 | `versions.yaml` | Pinned tool binaries (with checksums), node image, registry image |
 | `images.yaml` | Every image the lab cluster may run; input of `labctl lab mirror` |
 | `kind/cluster.yaml` | kind cluster config |
+| `scenarios/` | The failure scenarios: `scenario.yaml`, `manifests.yaml`, `expected.yaml` per scenario (see `scenarios/README.md`) |

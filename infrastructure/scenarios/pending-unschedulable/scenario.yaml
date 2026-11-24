@@ -1,0 +1,16 @@
+id: pending-unschedulable
+order: 4
+title: Pod Pending from an unsatisfiable nodeSelector
+description: >
+  The batch-worker Deployment requires a node labelled disktype=ssd. No node
+  in the cluster has that label, so the scheduler can never place the pod
+  and it stays Pending.
+namespace: scn-batch
+symptom: >
+  The batch-worker pods in namespace scn-batch never start.
+  Find the root cause.
+verify:
+  timeoutSeconds: 120
+  checks:
+    - type: podUnschedulable
+      selector: app=batch-worker

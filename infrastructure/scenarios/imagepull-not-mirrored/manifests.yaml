@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: session-cache
+  labels:
+    app: session-cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: session-cache
+  template:
+    metadata:
+      labels:
+        app: session-cache
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: redis
+          # The fault: this image exists upstream but was never mirrored.
+          image: docker.io/library/redis:7.4-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi

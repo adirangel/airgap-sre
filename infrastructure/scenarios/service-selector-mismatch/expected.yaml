@@ -1,0 +1,6 @@
+rootCauseCategory: service_selector_mismatch
+mustName:
+  - kind: Service
+    name: storefront
+  - kind: Deployment
+    name: shop-frontend

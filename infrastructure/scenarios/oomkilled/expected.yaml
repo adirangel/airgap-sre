@@ -1,0 +1,4 @@
+rootCauseCategory: oom_killed
+mustName:
+  - kind: Deployment
+    name: report-generator

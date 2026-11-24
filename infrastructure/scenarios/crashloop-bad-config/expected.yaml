@@ -1,0 +1,8 @@
+rootCauseCategory: bad_config
+mustName:
+  - kind: Deployment
+    name: checkout
+  - kind: ConfigMap
+    name: checkout-config
+  - kind: ConfigKey
+    name: DB_PORT
