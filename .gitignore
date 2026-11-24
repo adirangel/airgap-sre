@@ -1,0 +1,25 @@
+# Repo-local tool binaries downloaded by `labctl tools install` (kind, kubectl, helm).
+.tools/
+
+# Repo-local lab state: kubeconfig, Helm cache/config/data, rendered configs.
+.lab/
+
+# Build output
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+coverage.*
+
+# Local environment files. Secrets never belong in this repo.
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
